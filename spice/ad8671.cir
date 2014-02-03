@@ -1,0 +1,154 @@
+* AD8671 SPICE Macro-model                   
+* Description: Amplifier
+* Generic Desc: 10/30V, BIP, OP, Low Noise, Low Ib, 1X
+* Developed by: HH/ADI-SJ, Soufiane Bendaoud ADI Silicon valley
+* Revision History: 08/10/2012 - Updated to new header style
+* 2.0 (12/2009) - Corrected unpowered Ibais, PM, PSRR, IVR.  Changed noise gen,
+*      		  Added input C.
+* 1.0 ( 07/2003) 
+* Copyright 2003, 2009, 2012 by Analog Devices, Inc.
+*
+* Refer to http://www.analog.com/Analog_Root/static/techSupport/designTools/spiceModels/license/spice_general.html for License Statement.  Use of this model
+* indicates your acceptance of the terms and provisions in the License Statement.
+*
+* BEGIN Notes:
+*
+* Not Modeled:
+*    
+* Parameters modeled include: 
+* This model simulates typical values at Vs=±15V
+*
+* END Notes
+*
+* Node assignments
+*            	       non-inverting input
+*        	       |    inverting input
+*       	       |    |    positive supply
+*                      |    |     |     negative supply
+*                      |    |     |     |   output
+*                      |    |     |     |      |
+.SUBCKT AD8671         1    2     99    50     39
+*
+* INPUT STAGE 
+*
+R3   5  99    2.033E+04
+R4   6  99    2.033E+04
+CIN  1   2    7.45E-12
+CCM1 1  50    6.25E-12
+CCM2 2  50    6.25E-12
+RC   5  56    5.3E+03 
+CC   56  6    2.14E-13
+I1   4  50    300E-06
+VI1  450 50   2.7
+DI1  450  4   DX
+IOS  1   2    3E-9
+EOS  9  1    POLY(4)  (31 98) (81 98) (83 98) (73 98)  20E-6  1 1  1 1
+Q1   5  2  4  QINN
+Q2   6  9  4  QINN
+D1   2   1    DX
+D2   1   2    DX
+GN1  50  2    (60 61)  1.453E-05
+GN2  50  1    (62 63)  1.453E-05
+*
+* GAIN STAGE 
+*
+R7   20 98     1.652E+05
+C3   20 98     5.61E-07
+G1   98 20     (5 6) 3.603E-01
+EV1   98 21 POLY(1) (99 98)  -2.0E0 10E-1
+EV2   22 98 POLY(1) (98 50)  -2.3E0 10E-1
+D5   21 20     DX
+D6   20 22     DX
+EPLUS 97 0    99  0  1
+ENEG  51 0    50  0  1 
+Rtemp1 97 51 1meg
+*
+* COMMON-MODE GAIN NETWORK
+*
+E5   30 98     POLY(2) (2 50) (1 50)  0  4.196E-03  4.196E-03
+RCM1 30 31     1.061E+03
+RCM2 31 98     1.592E-01
+CCM  30 31     1.000E-06
+*
+* PSRR NETWORK
+*
+EPSY 98 72 POLY(1) (99,50) 3.350E-03  9.375E-01 
+CPS3 72 73 1.000E-06
+RPS3 72 73 9.947E+02
+RPS4 73 98 1.061E-02
+*
+* VOLTAGE NOISE REFERENCE OF 2.8nV/rt(Hz)
+*
+VN1 80 98 0
+RN1 80 98 26.34E-3
+HN  81 98 VN1 2.80E+00
+RN2 81 98 1
+*
+* FLICKER NOISE CORNER 
+*
+DFN 82 98 DNOISE
+VFN 82 98 DC 0.65520
+HFN 83 98 POLY(1) VFN 1.00E-03 1.00E+00
+RFN 83 98 1
+*
+* CURRENT NOISE SOURCE WITH FLICKER NOISE
+*
+D60 60 0 DIN1 1000
+I60 0 60 1m
+D61 61 0 DIN1
+I61 0 61 1u
+*
+* SECOND CURRENT NOISE SOURCE
+*
+D62 62 0 DIN1
+I62 0 62 1u
+D63 63 0 DIN1
+I63 0 63 1u
+*
+R17  33 99     1meg
+R18  33 50     1meg
+C178 33 50    1E-06
+C188 33 99    1E-06
+EREF  98 0    33  0  1
+*
+GSY  99 50     POLY(1) 99 50 2.24E-3 15E-6
+*
+* OUTPUT STAGE
+*
+R19  34 99     100
+R20  34 50     100
+G9   34 99     99 20  1.000E-02
+G10  50 34     20 50  1.000E-02
+*
+V3   35 34     0.65 
+D9   20 35     DX
+V4   34 36     0.52; 
+D10  36 20     DX
+*
+G7   37 50     20 34  1.0E-2
+G8   38 50     34 20  1.0E-2
+D11  99 37     DX
+D12  99 38     DX
+D13  50 37     DY
+D14  50 38     DY
+*
+F1   34  0     V3  1
+F2   0  34     V4  1
+*
+L3   34 39     1E-8;  39 is output pin
+*
+* MODELS USED
+*
+.MODEL QINN NPN(BF=3.0E4, VA=130)
+.MODEL DX   D(IS=1E-15, RS=1m)
+.MODEL DY   D(IS=1E-15 BV=50)
+.MODEL DEN  D(IS=1E-12, RS=4.0E+2, KF=1.08E-16, AF=1)
+.MODEL DNOISE D(IS=1E-14,RS=1E-1,KF=3.14E-14)
+.MODEL DIN  D(IS=1E-18, RS=1.0E-6, KF=1.82E-14, AF=1)
+.MODEL DIN1 D(IS=1E-16, RS=1.0E-0, KF=3.7E-16, AF=1)
+.ENDS AD8671
+*$
+
+
+
+
